@@ -1,0 +1,665 @@
+# Water Reminder PWA
+
+Below are the 3 files you need for a simple installable PWA water reminder app.
+
+---
+
+## 1) `index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#3b82f6" />
+  <meta name="description" content="A simple PWA reminder to drink water." />
+  <title>Drink Water Reminder</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      --bg1: #eff6ff;
+      --bg2: #dbeafe;
+      --card: rgba(255,255,255,0.82);
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #2563eb;
+      --primary-strong: #1d4ed8;
+      --border: rgba(148,163,184,0.25);
+      --success: #10b981;
+      --danger: #ef4444;
+      --shadow: 0 20px 50px rgba(37, 99, 235, 0.15);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(14,165,233,0.18), transparent 30%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      position: relative;
+      padding: 28px 24px 22px;
+      background: linear-gradient(135deg, rgba(37,99,235,0.95), rgba(14,165,233,0.92));
+      color: white;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -40px;
+      top: -40px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 1.7rem;
+      line-height: 1.1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: rgba(255,255,255,0.92);
+      position: relative;
+      z-index: 1;
+    }
+
+    .content {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .water-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cup {
+      width: 92px;
+      height: 120px;
+      border: 4px solid rgba(37,99,235,0.35);
+      border-top: 0;
+      border-radius: 0 0 26px 26px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.7);
+      flex-shrink: 0;
+    }
+
+    .water {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 45%;
+      background: linear-gradient(180deg, #38bdf8, #2563eb);
+      transition: height 0.35s ease;
+    }
+
+    .water::before,
+    .water::after {
+      content: "";
+      position: absolute;
+      top: -8px;
+      width: 200%;
+      height: 18px;
+      background: rgba(255,255,255,0.24);
+      border-radius: 45%;
+      animation: wave 4s linear infinite;
+    }
+
+    .water::after {
+      top: -10px;
+      animation-duration: 5.5s;
+      opacity: 0.7;
+    }
+
+    @keyframes wave {
+      from { transform: translateX(-35%); }
+      to { transform: translateX(0%); }
+    }
+
+    .stats {
+      display: grid;
+      gap: 6px;
+    }
+
+    .big {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input,
+    .select,
+    .button {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.25);
+      padding: 14px 14px;
+      font-size: 1rem;
+      background: white;
+      outline: none;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: rgba(37,99,235,0.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+    }
+
+    .button {
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 12px 24px rgba(37,99,235,0.18);
+    }
+
+    .button:active {
+      transform: scale(0.98);
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+    }
+
+    .button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid rgba(148,163,184,0.25);
+      box-shadow: none;
+    }
+
+    .button.success {
+      background: linear-gradient(135deg, #14b8a6, var(--success));
+      color: white;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 14px;
+      background: rgba(148,163,184,0.2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #2563eb);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.08);
+      color: var(--primary-strong);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.86rem;
+      color: var(--muted);
+      padding-top: 6px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .status {
+      font-size: 0.93rem;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(16,185,129,0.12);
+      color: #065f46;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 14px; }
+      .row { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.45rem; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>Drink Water Reminder</h1>
+      <p>Set your goal, get reminders, and keep your hydration on track.</p>
+    </section>
+
+    <section class="content">
+      <div class="card">
+        <div class="water-wrap">
+          <div class="cup">
+            <div class="water" id="waterLevel"></div>
+          </div>
+          <div class="stats">
+            <div class="big"><span id="currentMl">0</span> ml</div>
+            <div class="muted">Today’s intake</div>
+            <div class="pill">Goal: <span id="goalLabel">2000</span> ml</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card stack">
+        <div>
+          <div class="label">Daily Progress</div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="muted" id="progressText">0% of your daily goal completed.</div>
+      </div>
+
+      <div class="card stack">
+        <div class="label">Quick Add</div>
+        <div class="row">
+          <button class="button primary" data-add="150">+150 ml</button>
+          <button class="button primary" data-add="250">+250 ml</button>
+          <button class="button primary" data-add="350">+350 ml</button>
+          <button class="button primary" data-add="500">+500 ml</button>
+        </div>
+        <button class="button secondary" id="resetBtn">Reset Today</button>
+      </div>
+
+      <div class="card stack">
+        <div class="label">Reminder Settings</div>
+        <div class="row">
+          <div>
+            <label class="muted" for="goalInput">Daily Goal (ml)</label>
+            <input class="input" id="goalInput" type="number" min="250" step="50" value="2000" />
+          </div>
+          <div>
+            <label class="muted" for="intervalSelect">Reminder Interval</label>
+            <select class="select" id="intervalSelect">
+              <option value="15">Every 15 minutes</option>
+              <option value="30" selected>Every 30 minutes</option>
+              <option value="45">Every 45 minutes</option>
+              <option value="60">Every 1 hour</option>
+              <option value="90">Every 1.5 hours</option>
+              <option value="120">Every 2 hours</option>
+            </select>
+          </div>
+        </div>
+        <button class="button success" id="enableBtn">Enable Notifications</button>
+        <div id="statusBox" class="status hidden"></div>
+        <div class="subtext">
+          Notifications work best after installing the app and allowing notification permission.
+        </div>
+      </div>
+
+      <div class="footer-note">Stay hydrated. Small sips count.</div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "water-reminder-data-v1";
+
+    const state = {
+      current: 0,
+      goal: 2000,
+      interval: 30,
+      lastDate: getTodayKey(),
+      timeoutId: null,
+      intervalId: null
+    };
+
+    const currentMl = document.getElementById("currentMl");
+    const goalLabel = document.getElementById("goalLabel");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const waterLevel = document.getElementById("waterLevel");
+    const goalInput = document.getElementById("goalInput");
+    const intervalSelect = document.getElementById("intervalSelect");
+    const enableBtn = document.getElementById("enableBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusBox = document.getElementById("statusBox");
+
+    function getTodayKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.lastDate !== getTodayKey()) {
+          saved.current = 0;
+          saved.lastDate = getTodayKey();
+        }
+        Object.assign(state, saved);
+      } catch (error) {
+        console.error("Failed to load state:", error);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        current: state.current,
+        goal: state.goal,
+        interval: state.interval,
+        lastDate: state.lastDate
+      }));
+    }
+
+    function showStatus(message) {
+      statusBox.textContent = message;
+      statusBox.classList.remove("hidden");
+    }
+
+    function render() {
+      if (state.lastDate !== getTodayKey()) {
+        state.current = 0;
+        state.lastDate = getTodayKey();
+        saveState();
+      }
+
+      currentMl.textContent = state.current;
+      goalLabel.textContent = state.goal;
+      goalInput.value = state.goal;
+      intervalSelect.value = String(state.interval);
+
+      const percent = Math.min(100, Math.round((state.current / state.goal) * 100));
+      progressFill.style.width = `${percent}%`;
+      progressText.textContent = `${percent}% of your daily goal completed.`;
+
+      const visualPercent = Math.max(8, percent || 8);
+      waterLevel.style.height = `${visualPercent}%`;
+    }
+
+    function addWater(amount) {
+      state.current += amount;
+      saveState();
+      render();
+
+      if (navigator.vibrate) {
+        navigator.vibrate(20);
+      }
+    }
+
+    function resetToday() {
+      state.current = 0;
+      state.lastDate = getTodayKey();
+      saveState();
+      render();
+      showStatus("Today’s intake has been reset.");
+    }
+
+    function scheduleReminderLoop() {
+      clearScheduledReminders();
+      const ms = state.interval * 60 * 1000;
+
+      state.timeoutId = setTimeout(() => {
+        sendReminder();
+        state.intervalId = setInterval(sendReminder, ms);
+      }, ms);
+    }
+
+    function clearScheduledReminders() {
+      if (state.timeoutId) clearTimeout(state.timeoutId);
+      if (state.intervalId) clearInterval(state.intervalId);
+      state.timeoutId = null;
+      state.intervalId = null;
+    }
+
+    function sendReminder() {
+      if (Notification.permission !== "granted") return;
+
+      const remaining = Math.max(0, state.goal - state.current);
+      const body = remaining > 0
+        ? `Time to drink water. You still need ${remaining} ml to hit your goal.`
+        : "Great job. Stay consistent and keep sipping water.";
+
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification("Drink Water 💧", {
+            body,
+            icon: "icon-192.png",
+            badge: "icon-192.png",
+            tag: "water-reminder",
+            renotify: true
+          });
+        });
+      } else {
+        new Notification("Drink Water 💧", { body });
+      }
+    }
+
+    async function enableNotifications() {
+      if (!("Notification" in window)) {
+        showStatus("This browser does not support notifications.");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        showStatus("Notification permission was not granted.");
+        return;
+      }
+
+      scheduleReminderLoop();
+      showStatus(`Notifications enabled every ${state.interval} minutes.`);
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("[data-add]").forEach((button) => {
+        button.addEventListener("click", () => {
+          addWater(Number(button.dataset.add));
+        });
+      });
+
+      goalInput.addEventListener("change", () => {
+        const value = Number(goalInput.value);
+        state.goal = Math.max(250, value || 2000);
+        saveState();
+        render();
+      });
+
+      intervalSelect.addEventListener("change", () => {
+        state.interval = Number(intervalSelect.value);
+        saveState();
+        if (Notification.permission === "granted") {
+          scheduleReminderLoop();
+          showStatus(`Reminder interval updated to every ${state.interval} minutes.`);
+        }
+      });
+
+      enableBtn.addEventListener("click", enableNotifications);
+      resetBtn.addEventListener("click", resetToday);
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && state.lastDate !== getTodayKey()) {
+          state.current = 0;
+          state.lastDate = getTodayKey();
+          saveState();
+          render();
+        }
+      });
+    }
+
+    async function registerServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("./sw.js");
+        } catch (error) {
+          console.error("Service worker registration failed:", error);
+        }
+      }
+    }
+
+    loadState();
+    render();
+    bindEvents();
+    registerServiceWorker();
+  </script>
+</body>
+</html>
+```
+
+---
+
+## 2) `manifest.webmanifest`
+
+```json
+{
+  "name": "Drink Water Reminder",
+  "short_name": "WaterRemind",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#dbeafe",
+  "theme_color": "#3b82f6",
+  "description": "A simple PWA reminder to drink water.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+---
+
+## 3) `sw.js`
+
+```javascript
+const CACHE_NAME = "water-reminder-cache-v1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest"
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cached) => cached || fetch(event.request))
+  );
+});
+```
+
+---
+
+## Setup
+
+1. Save all 3 files in the same folder.
+2. Add your own `icon-192.png` and `icon-512.png` into the same folder.
+3. Upload the folder to GitHub Pages, Netlify, or Vercel.
+4. Open it in Chrome or Edge and install it as an app.
+5. Tap **Enable Notifications** and allow notification permission.
+
+## Notes
+
+* A real PWA cannot be fully done with only one HTML file because it also needs a manifest and service worker.
+* On iPhone, notification support depends on adding the app to the Home Screen and using Safari.
+* If you want, the next step is I can turn this into a more premium iPhone-style version with streaks, hydration history, dark mode, and custom water cup sizes.
